@@ -12,6 +12,7 @@ import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './modules/user/user.module';
+import { ProductsModule } from '@/modules/products/products.module';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { UserModule } from './modules/user/user.module';
         uri: configService.getOrThrow<string>('database.url'),
       }),
     }),
-    UserModule,
+    ProductsModule
   ],
   controllers: [AppController],
   providers: [
