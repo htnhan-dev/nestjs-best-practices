@@ -7,8 +7,9 @@ import {
 } from '@nestjs/common';
 
 import { AppLoggerService } from '@/common/logger';
-import { BaseResponseDto } from '@/common/dto';
+import { BaseResponse } from '@/common/base';
 import { HttpAdapterHost } from '@nestjs/core';
+import { ThrottlerException } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 @Catch()
@@ -26,6 +27,21 @@ export class HttpExceptionsFilter implements ExceptionFilter {
 
     const { status, message } = this.normalizeException(exception);
 
+    // Special handling for ThrottlerException
+    if (exception instanceof ThrottlerException) {
+      httpAdapter.reply(
+        response,
+        {
+          success: false,
+          message,
+          retryAfter: 60,
+          timestamp: new Date().toISOString(),
+        },
+        status,
+      );
+      return;
+    }
+
     // Mask sensitive fields
     const safeBody = this.safeBody(request?.body);
 
@@ -39,7 +55,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
       HttpExceptionsFilter.name,
     );
 
-    httpAdapter.reply(response, BaseResponseDto.fail(message), status);
+    httpAdapter.reply(response, BaseResponse.fail(message), status);
   }
 
   private normalizeException(exception: unknown): {

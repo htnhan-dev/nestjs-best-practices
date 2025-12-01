@@ -9,7 +9,7 @@ export abstract class BaseService<TEntity> {
     private readonly entityName: string,
   ) {}
 
-  async create<T extends Record<string, unknown>>(dto: T): Promise<TEntity> {
+  async create<T>(dto: T): Promise<TEntity> {
     return this.repository.create(dto);
   }
 
@@ -29,10 +29,7 @@ export abstract class BaseService<TEntity> {
     return entity;
   }
 
-  async update<T extends Record<string, unknown>>(
-    id: string,
-    dto: T,
-  ): Promise<TEntity> {
+  async update<T>(id: string, dto: T): Promise<TEntity> {
     const entity = await this.repository.update(id, dto);
 
     if (!entity) {

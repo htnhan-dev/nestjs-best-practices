@@ -1,11 +1,14 @@
-import { Global, Module } from '@nestjs/common';
+import { Category, CategorySchema } from '@/modules/categories/schemas';
+
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-@Global() // - Makes the module global, so its exports are available everywhere
 @Module({
   imports: [
-    MongooseModule.forFeature([]),
+    MongooseModule.forFeature([
+      { name: Category.name, schema: CategorySchema },
+    ]),
   ],
-  exports: [MongooseModule]
+  exports: [MongooseModule],
 })
 export class DatabaseModule {}

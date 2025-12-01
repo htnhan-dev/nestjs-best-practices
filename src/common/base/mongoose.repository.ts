@@ -6,7 +6,7 @@ import type { PaginationQueryDto } from '@/common/dto';
 export class MongooseRepository<TEntity> implements BaseRepository<TEntity> {
   constructor(private readonly model: Model<TEntity>) {}
 
-  async create<T extends Record<string, unknown>>(dto: T): Promise<TEntity> {
+  async create<T>(dto: T): Promise<TEntity> {
     const document = await this.model.create(dto as unknown as TEntity);
     return document as TEntity;
   }
@@ -36,10 +36,7 @@ export class MongooseRepository<TEntity> implements BaseRepository<TEntity> {
     return (document as unknown as TEntity) ?? null;
   }
 
-  async update<T extends Record<string, unknown>>(
-    id: string,
-    dto: T,
-  ): Promise<TEntity | null> {
+  async update<T>(id: string, dto: T): Promise<TEntity | null> {
     const updated = await this.model
       .findByIdAndUpdate(id, dto as unknown as UpdateQuery<TEntity>, {
         new: true,
