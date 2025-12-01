@@ -13,6 +13,8 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './modules/user/user.module';
 import { ProductsModule } from '@/modules/products/products.module';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -27,6 +29,10 @@ import { ProductsModule } from '@/modules/products/products.module';
         uri: configService.getOrThrow<string>('database.url'),
       }),
     }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10,
+    }),
     ProductsModule
   ],
   controllers: [AppController],
@@ -36,6 +42,10 @@ import { ProductsModule } from '@/modules/products/products.module';
     LoggingInterceptor,
     TimeoutInterceptor,
     ResponseTransformInterceptor,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
