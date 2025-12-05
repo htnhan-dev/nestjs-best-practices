@@ -22,3 +22,10 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+# storage or uploaded files
+/storage
+/uploads
+
+# docs openapi
+/public/docs/openapi.json

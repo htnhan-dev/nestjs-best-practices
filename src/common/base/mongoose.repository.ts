@@ -32,7 +32,7 @@ export class MongooseRepository<TEntity> implements BaseRepository<TEntity> {
   }
 
   async findById(id: string): Promise<TEntity | null> {
-    const document = await this.model.findById(id).lean().exec();
+    const document = await this.model.findOne({ _id: id }).exec();
     return (document as unknown as TEntity) ?? null;
   }
 

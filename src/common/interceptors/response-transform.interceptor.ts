@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 
-import { BaseResponseDto } from '@/common/dto';
+import { BaseResponse } from '@/common/base';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -21,7 +21,7 @@ export class ResponseTransformInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data: unknown) => {
         // Already a BaseResponseDto instance
-        if (data instanceof BaseResponseDto) {
+        if (data instanceof BaseResponse) {
           return data;
         }
 
@@ -36,7 +36,7 @@ export class ResponseTransformInterceptor implements NestInterceptor {
         }
 
         // Wrap plain data
-        return new BaseResponseDto({
+        return new BaseResponse({
           success: true,
           data,
         });

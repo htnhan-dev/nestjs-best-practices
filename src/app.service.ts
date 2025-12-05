@@ -1,4 +1,4 @@
-import { BaseResponseDto } from '@/common/dto';
+import { BaseResponse } from '@/common/dto';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 export class AppService {
   constructor(private readonly configService: ConfigService) {}
 
-  getHealth(): BaseResponseDto<{
+  getHealth(): BaseResponse<{
     status: string;
     environment: string;
     port: number;
@@ -15,7 +15,7 @@ export class AppService {
       this.configService.get<string>('app.env') ?? 'development';
     const port = this.configService.get<number>('app.port') ?? 3000;
 
-    return BaseResponseDto.ok(
+    return BaseResponse.ok(
       {
         status: 'ok',
         environment,

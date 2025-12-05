@@ -1,0 +1,26 @@
+import { Image, ImageSchema } from '@/shared/schemas';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+
+import { Document } from 'mongoose';
+
+export type CategoryDocument = Category & Document;
+
+@Schema({ timestamps: true })
+export class Category {
+  @Prop({ required: true, unique: true })
+  name: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop({ required: true, unique: true })
+  slug: string;
+
+  @Prop({ type: ImageSchema, default: null })
+  image?: Image;
+
+  @Prop({ default: true })
+  active: boolean;
+}
+
+export const CategorySchema = SchemaFactory.createForClass(Category);

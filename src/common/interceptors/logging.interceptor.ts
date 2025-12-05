@@ -30,8 +30,10 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         const duration = Date.now() - startedAt;
-        this.logger.log(
-          `${method} ${originalUrl} ${duration}ms`,
+        const requestId =
+          (request as unknown as { requestId?: string }).requestId ?? 'no-rid';
+        this.logger.http(
+          `${method} ${originalUrl} ${duration}ms [req:${requestId}]`,
           LoggingInterceptor.name,
         );
       }),

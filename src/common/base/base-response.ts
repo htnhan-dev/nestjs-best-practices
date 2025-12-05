@@ -10,6 +10,7 @@ export interface BaseResponsePayload<T> {
   message?: string | string[];
   data?: T;
   meta?: PaginationMeta;
+  error?: string;
   timestamp?: string;
 }
 
@@ -21,6 +22,7 @@ export class BaseResponse<T> {
   message?: string | string[];
   data?: T;
   meta?: PaginationMeta;
+  error?: string;
   timestamp: string;
 
   constructor({
@@ -28,12 +30,14 @@ export class BaseResponse<T> {
     message,
     data,
     meta,
+    error,
     timestamp,
   }: BaseResponsePayload<T>) {
     this.success = success;
     this.message = message;
     this.data = data;
     this.meta = meta;
+    this.error = error;
     this.timestamp = timestamp ?? new Date().toISOString();
   }
 
@@ -52,7 +56,11 @@ export class BaseResponse<T> {
     return new BaseResponse<T>({ success: true, data, meta, message });
   }
 
-  static fail<T>(message: string | string[]): BaseResponse<T> {
-    return new BaseResponse<T>({ success: false, message });
+  static fail<T>(message: string | string[], error?: string): BaseResponse<T> {
+    return new BaseResponse<T>({
+      success: false,
+      message,
+      error,
+    });
   }
 }

@@ -1,6 +1,6 @@
+import { BaseResponse } from '@/common/base';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { BaseResponseDto } from '@/common/dto';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -42,7 +42,7 @@ describe('AppController', () => {
     it('should return a successful health payload', () => {
       const response = appController.getHealth();
 
-      expect(response).toBeInstanceOf(BaseResponseDto);
+      expect(response).toBeInstanceOf(BaseResponse);
       expect(response.success).toBe(true);
       expect(response.data).toMatchObject({
         status: 'ok',

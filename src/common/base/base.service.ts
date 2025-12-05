@@ -9,17 +9,17 @@ export abstract class BaseService<TEntity> {
     private readonly entityName: string,
   ) {}
 
-  async create<T>(dto: T): Promise<TEntity> {
+  async _create<T>(dto: T): Promise<TEntity> {
     return this.repository.create(dto);
   }
 
-  async find(
+  async _find(
     pagination?: PaginationQueryDto,
   ): Promise<PaginatedResult<TEntity>> {
     return this.repository.find(pagination);
   }
 
-  async findOne(id: string): Promise<TEntity> {
+  async _findOne(id: string): Promise<TEntity> {
     const entity = await this.repository.findById(id);
 
     if (!entity) {
@@ -29,7 +29,7 @@ export abstract class BaseService<TEntity> {
     return entity;
   }
 
-  async update<T>(id: string, dto: T): Promise<TEntity> {
+  async _update<T>(id: string, dto: T): Promise<TEntity> {
     const entity = await this.repository.update(id, dto);
 
     if (!entity) {
@@ -39,7 +39,7 @@ export abstract class BaseService<TEntity> {
     return entity;
   }
 
-  async remove(id: string): Promise<{ id: string }> {
+  async _remove(id: string): Promise<{ id: string }> {
     const removed = await this.repository.remove(id);
 
     if (!removed) {

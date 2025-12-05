@@ -6,5 +6,8 @@
     "deleteOutDir": true,
     "assets": ["**/*.json", "**/*.txt"],
     "watchAssets": true
+  },
+   "watchOptions": {
+    "usePolling": true
   }
 }

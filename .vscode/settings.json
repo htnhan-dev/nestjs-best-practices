@@ -1,0 +1,21 @@
+{
+  // TypeScript/JavaScript imports
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+
+  // Auto import suggestions
+  "typescript.preferences.importModuleSpecifierEnding": "auto",
+  "javascript.preferences.importModuleSpecifierEnding": "auto",
+
+  // Prefer using index files
+  "typescript.preferences.useAliasesForRenames": false,
+
+  // Format on save
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Auto organize imports
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  }
+}

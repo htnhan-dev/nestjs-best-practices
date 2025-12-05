@@ -1,7 +1,8 @@
-import type { BaseService } from './base.service';
 import { BaseResponse, PaginationMeta } from '@/common/base';
+import { ApiEndpoint } from '@/common/decorators';
 import { PaginationQueryDto } from '@/common/dto';
 import {
+  BadRequestException,
   Body,
   Delete,
   Get,
@@ -12,11 +13,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import type { BaseService } from './base.service';
 
 export abstract class BaseController<TEntity> {
   protected constructor(
     protected readonly service: BaseService<TEntity>,
-    private readonly resourceName: string,
+    private readonly resourceName: string = 'Entity',
   ) {}
 
   // Helper methods (ok/fail)
@@ -38,22 +41,36 @@ export abstract class BaseController<TEntity> {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiExcludeEndpoint()
   async _create<T>(@Body() dto: T): Promise<BaseResponse<TEntity>> {
-    const entity = await this.service.create(dto);
+    const entity = await this.service._create(dto);
     return this.ok(entity, `${this.resourceName} created successfully`);
   }
 
   @Get()
+  @ApiEndpoint({
+    title: `Find`,
+    success: `List of entities`,
+    method: 'GET',
+    query: {
+      page: { required: false, default: 1, example: 1 },
+      limit: { required: false, default: 10, example: 10 },
+    },
+  })
   async _find(
-    @Query() query: PaginationQueryDto,
+    @Query() query?: PaginationQueryDto,
   ): Promise<BaseResponse<TEntity[]>> {
-    const result = await this.service.find(query);
+    const safeQuery = query ?? { page: 1, limit: 20 };
+
+    const result = await this.service._find(safeQuery);
+
     const meta: PaginationMeta = {
       page: result.page,
       limit: result.limit,
       total: result.total,
-      totalPages: Math.ceil(result.total / result.limit),
+      totalPages: Math.max(1, Math.ceil(result.total / result.limit)),
     };
+
     return this.okWithMeta(
       result.items,
       meta,
@@ -62,26 +79,42 @@ export abstract class BaseController<TEntity> {
   }
 
   @Get(':id')
+  @ApiEndpoint({
+    title: 'Find One',
+    success: 'Entity retrieved successfully',
+    method: 'GET',
+  })
   async _findOne(@Param('id') id: string): Promise<BaseResponse<TEntity>> {
-    const entity = await this.service.findOne(id);
+    const entity = await this.service._findOne(id);
     return this.ok(entity, `${this.resourceName} retrieved successfully`);
   }
 
   @Patch(':id')
+  @ApiExcludeEndpoint()
   async _update<T>(
     @Param('id') id: string,
     @Body() dto: T,
   ): Promise<BaseResponse<TEntity>> {
-    const entity = await this.service.update(id, dto);
+    // Validate that update data is provided
+    if (!dto || typeof dto !== 'object' || Object.keys(dto).length === 0) {
+      throw new BadRequestException('Update data must be provided');
+    }
+
+    const entity = await this.service._update(id, dto);
     return this.ok(entity, `${this.resourceName} updated successfully`);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    title: 'Remove',
+    success: 'Entity removed successfully',
+    method: 'DELETE',
+  })
   async _remove(
     @Param('id') id: string,
   ): Promise<BaseResponse<{ id: string }>> {
-    const result = await this.service.remove(id);
+    const result = await this.service._remove(id);
     return this.ok(result, `${this.resourceName} removed successfully`);
   }
 }

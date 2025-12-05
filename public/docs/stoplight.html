@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unified API Docs</title>
+    <script>
+      // Try to load local assets first; fallback to CDN on failure
+      function loadScript(src, isModule) {
+        return new Promise((resolve, reject) => {
+          const el = document.createElement(isModule ? 'script' : 'link');
+          if (isModule) {
+            el.type = 'module';
+            el.src = src;
+            el.onload = () => resolve();
+            el.onerror = () => reject();
+          } else {
+            el.rel = 'stylesheet';
+            el.href = src;
+            el.onload = () => resolve();
+            el.onerror = () => reject();
+          }
+          document.head.appendChild(el);
+        });
+      }
+
+      (async () => {
+        try {
+          await loadScript('/docs/web-components.min.js', true);
+          await loadScript('/docs/styles.min.css', false);
+        } catch (err) {
+          await loadScript(
+            'https://unpkg.com/@stoplight/elements/web-components.min.js',
+            true,
+          );
+          await loadScript(
+            'https://unpkg.com/@stoplight/elements/styles.min.css',
+            false,
+          );
+        }
+      })();
+    </script>
+  </head>
+  <body style="margin: 0; padding: 0; height: 100vh">
+    <elements-api
+      apiDescriptionUrl="/docs/openapi.json"
+      router="hash"
+      layout="sidebar"
+    >
+    </elements-api>
+  </body>
+</html>
