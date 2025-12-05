@@ -3,10 +3,11 @@ import { Type, TypeDocument } from '@/modules/types/schemas';
 import { BaseController, BaseResponse } from '@/common/base';
 import { ApiEndpoint } from '@/common/decorators';
 import { OptimizedMediaInterceptor } from '@/common/interceptors';
-import { multerFileToMedia } from '@/common/utils';
+import { multerFileToMedia, slugify } from '@/common/utils';
 import { multerConfig } from '@/configs/multer.config';
 import { CreateTypeDto, UpdateTypeDto } from '@/modules/types/dto';
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -62,13 +63,27 @@ export class TypesController extends BaseController<TypeDocument> {
   )
   async update(
     @Param('id') id: string,
-    @Body() body: UpdateTypeDto,
+    @Body() dto: UpdateTypeDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<BaseResponse<TypeDocument>> {
-    if (file) {
-      body.image = multerFileToMedia(file, body.name);
+    if (!dto || typeof dto !== 'object' || Object.keys(dto).length === 0) {
+      throw new BadRequestException('Update data must be provided');
     }
-    const result = await this.typesService.update(id, body, file);
+
+    if (!dto.image && !file) {
+      dto.image = null;
+    }
+
+    if (file) {
+      dto.image = multerFileToMedia(file, dto.name);
+    }
+
+    dto.slug = slugify(dto.name || '');
+
+    const data = super.cleanData(dto) as UpdateTypeDto;
+
+    const result = await this.typesService.update(id, data, file);
+
     return this.ok(result, 'Type updated successfully');
   }
 }

@@ -1,7 +1,8 @@
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ToBoolean } from '@/common/decorators';
 import { Image } from '@/shared/interfaces';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
   @ApiProperty({ example: 'Writing' })
@@ -15,11 +16,12 @@ export class CreateCategoryDto {
 
   @IsOptional()
   @ApiProperty({ type: 'string', format: 'binary', required: false })
-  image?: Image;
+  image?: Image | null;
 
-  @ApiProperty({ example: true, required: false })
+  @ApiProperty({ required: false, default: true })
   @IsBoolean()
   @IsOptional()
+  @ToBoolean()
   readonly active?: boolean;
 
   @IsString()

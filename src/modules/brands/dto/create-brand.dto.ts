@@ -1,27 +1,30 @@
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ToBoolean } from '@/common/decorators';
 import { Image } from '@/shared/interfaces';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBrandDto {
-  @ApiProperty({ example: 'Adidas' })
+  @ApiProperty({ example: 'Writing' })
   @IsString()
   readonly name: string;
 
-  @ApiProperty({ example: 'Sports brand', required: false })
   @IsString()
   @IsOptional()
+  @ApiProperty({ example: 'Description of Writing', required: false })
   readonly description?: string;
 
   @IsOptional()
   @ApiProperty({ type: 'string', format: 'binary', required: false })
-  image?: Image;
+  image?: Image | null;
 
-  @ApiProperty({ example: true, required: false })
+  @ApiProperty({ required: false, default: true })
   @IsBoolean()
   @IsOptional()
+  @ToBoolean()
   readonly active?: boolean;
 
+  @IsString()
   @IsOptional()
   slug?: string;
 }

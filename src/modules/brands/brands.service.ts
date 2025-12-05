@@ -2,7 +2,6 @@ import { Brand, BrandDocument } from '@/modules/brands/schemas';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { BaseService } from '@/common/base';
-import { multerFileToMedia } from '@/common/utils';
 import removeFile from '@/common/utils/remove-file.util';
 import { BrandsRepository } from '@/modules/brands/brands.repository';
 import { UpdateBrandDto } from '@/modules/brands/dto';
@@ -18,21 +17,13 @@ export class BrandsService extends BaseService<BrandDocument> {
     dto: UpdateBrandDto,
     file?: Express.Multer.File,
   ): Promise<BrandDocument> {
-    const brand = await this.brandsRepository.findById(id);
+    const brand = await this.brandsRepository.update(id, dto);
+
     if (!brand) throw new NotFoundException('Brand not found');
 
     if (file) {
       removeFile(brand.image?.url || '');
-      dto.image = multerFileToMedia(file);
-    } else {
-      delete dto.image;
     }
-
-    const cleanData = super.cleanUpdate(dto);
-
-    Object.assign(brand, cleanData);
-
-    await brand.save();
 
     return brand;
   }

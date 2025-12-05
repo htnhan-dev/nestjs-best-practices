@@ -70,19 +70,23 @@ export class CategoriesController extends BaseController<CategoryDocument> {
     @Body() dto: UpdateCategoryDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<BaseResponse<CategoryDocument>> {
-    console.log('dto : ', dto);
-
     if (!dto || typeof dto !== 'object' || Object.keys(dto).length === 0) {
       throw new BadRequestException('Update data must be provided');
     }
 
-    if (!dto.image) {
-      delete dto.image;
+    if (!dto.image && !file) {
+      dto.image = null;
+    }
+
+    if (file) {
+      dto.image = multerFileToMedia(file);
     }
 
     dto.slug = slugify(dto.name || '');
 
-    const result = await this.categoryService.update(id, dto, file);
+    const data = super.cleanData(dto) as UpdateCategoryDto;
+
+    const result = await this.categoryService.update(id, data, file);
 
     return this.ok(result, 'Category updated successfully');
   }

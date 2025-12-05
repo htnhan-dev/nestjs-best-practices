@@ -9,25 +9,6 @@ export abstract class BaseService<TEntity> {
     private readonly entityName: string,
   ) {}
 
-  // - Helper methods for derived services to use
-  protected cleanUpdate<T>(dto: T): Partial<T> {
-    const cleaned: Partial<T> = {};
-
-    for (const key in dto) {
-      if (!Object.prototype.hasOwnProperty.call(dto, key)) continue;
-
-      const value = dto[key];
-
-      if (value === undefined) continue;
-      if (value === null) continue;
-      if (value === '') continue;
-
-      cleaned[key] = value;
-    }
-
-    return cleaned;
-  }
-
   async _create<T>(dto: T): Promise<TEntity> {
     return this.repository.create(dto);
   }

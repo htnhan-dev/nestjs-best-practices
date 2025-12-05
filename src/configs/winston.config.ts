@@ -1,7 +1,8 @@
 import * as winston from 'winston';
 
+import { hostname, tmpdir } from 'os';
+
 import { mkdirSync } from 'fs';
-import { hostname } from 'os';
 import { join } from 'path';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
@@ -163,6 +164,8 @@ const dailyRotateFileTransport = new DailyRotateFile({
   maxFiles: '14d',
   zippedArchive: true,
   format: customFormat,
+  // Move the audit file outside the repository logs folder so it doesn't litter the repo as JSON
+  auditFile: join(tmpdir(), '.winston-app-audit.json'),
 });
 
 const errorDailyRotateFileTransport = new DailyRotateFile({
@@ -173,6 +176,8 @@ const errorDailyRotateFileTransport = new DailyRotateFile({
   level: 'error',
   zippedArchive: true,
   format: customFormat,
+  // Move audit file outside repo
+  auditFile: join(tmpdir(), '.winston-error-audit.json'),
 });
 
 // Access logs (HTTP) - useful to separate access logs from application logs
@@ -184,6 +189,8 @@ const accessDailyRotateFileTransport = new DailyRotateFile({
   level: 'http',
   zippedArchive: true,
   format: customFormat,
+  // Move audit file outside repo
+  auditFile: join(tmpdir(), '.winston-access-audit.json'),
 });
 
 const defaultLogLevel =
@@ -221,6 +228,8 @@ export const winstonConfig: winston.LoggerOptions = {
       maxFiles: '30d',
       zippedArchive: true,
       format: customFormat,
+      // Move audit file outside repo
+      auditFile: join(tmpdir(), '.winston-exceptions-audit.json'),
     }),
   ],
   rejectionHandlers: [
@@ -231,6 +240,8 @@ export const winstonConfig: winston.LoggerOptions = {
       maxFiles: '30d',
       zippedArchive: true,
       format: customFormat,
+      // Move audit file outside repo
+      auditFile: join(tmpdir(), '.winston-rejections-audit.json'),
     }),
   ],
 };

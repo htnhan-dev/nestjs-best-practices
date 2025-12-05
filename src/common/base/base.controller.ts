@@ -22,6 +22,25 @@ export abstract class BaseController<TEntity> {
     private readonly resourceName: string = 'Entity',
   ) {}
 
+  // - Helper methods for derived services to use
+  protected cleanData<T>(dto: T): Partial<T> {
+    const cleaned: Partial<T> = {};
+
+    for (const key in dto) {
+      if (!Object.prototype.hasOwnProperty.call(dto, key)) continue;
+
+      const value = dto[key];
+
+      if (value === undefined) continue;
+      if (value === null) continue;
+      if (value === '') continue;
+
+      cleaned[key] = value;
+    }
+
+    return cleaned;
+  }
+
   // Helper methods (ok/fail)
   protected ok<T>(data: T, message?: string): BaseResponse<T> {
     return BaseResponse.ok(data, message);

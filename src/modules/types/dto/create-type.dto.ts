@@ -1,32 +1,30 @@
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ToBoolean } from '@/common/decorators';
 import { Image } from '@/shared/schemas/image.schema';
-import { Type as TransformType } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTypeDto {
-  @ApiProperty({ example: 'Shoe' })
+  @ApiProperty({ example: 'Writing' })
   @IsString()
   readonly name: string;
 
-  @ApiProperty({ example: 'Description of Shoe', required: false })
   @IsString()
   @IsOptional()
+  @ApiProperty({ example: 'Description of Writing', required: false })
   readonly description?: string;
 
-  @ValidateNested()
   @IsOptional()
   @ApiProperty({ type: 'string', format: 'binary', required: false })
-  @TransformType(() => Image)
-  image?: Image;
+  image?: Image | null;
 
-  @ApiProperty({ example: true, required: false })
+  @ApiProperty({ required: false, default: true })
   @IsBoolean()
   @IsOptional()
+  @ToBoolean()
   readonly active?: boolean;
+
+  @IsString()
+  @IsOptional()
+  slug?: string;
 }

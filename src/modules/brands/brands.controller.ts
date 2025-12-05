@@ -6,6 +6,7 @@ import { OptimizedMediaInterceptor } from '@/common/interceptors';
 import { multerFileToMedia, slugify } from '@/common/utils';
 import { multerConfig } from '@/configs/multer.config';
 import {
+  BadRequestException,
   Body,
   Controller,
   Param,
@@ -63,9 +64,23 @@ export class BrandsController extends BaseController<BrandDocument> {
     @Body() dto: UpdateBrandDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<BaseResponse<BrandDocument>> {
+    if (!dto || typeof dto !== 'object' || Object.keys(dto).length === 0) {
+      throw new BadRequestException('Update data must be provided');
+    }
+
+    if (!dto.image && !file) {
+      dto.image = null;
+    }
+
+    if (file) {
+      dto.image = multerFileToMedia(file);
+    }
+
     dto.slug = slugify(dto.name || '');
 
-    const result = await this.brandsService.update(id, dto, file);
+    const data = super.cleanData(dto) as UpdateBrandDto;
+
+    const result = await this.brandsService.update(id, data, file);
 
     return this.ok(result, 'Brand updated successfully');
   }
