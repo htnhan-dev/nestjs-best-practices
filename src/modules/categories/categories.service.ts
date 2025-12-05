@@ -2,10 +2,10 @@ import { Category, CategoryDocument } from '@/modules/categories/schemas';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { BaseService } from '@/common/base';
-import { CategoriesRepository } from '@/modules/categories/categories.repository';
-import { UpdateCategoryDto } from '@/modules/categories/dto';
 import { multerFileToMedia } from '@/common/utils';
 import removeFile from '@/common/utils/remove-file.util';
+import { CategoriesRepository } from '@/modules/categories/categories.repository';
+import { UpdateCategoryDto } from '@/modules/categories/dto';
 
 @Injectable()
 export class CategoriesService extends BaseService<CategoryDocument> {
@@ -24,9 +24,13 @@ export class CategoriesService extends BaseService<CategoryDocument> {
     if (file) {
       removeFile(category.image?.url || '');
       dto.image = multerFileToMedia(file);
+    } else {
+      delete dto.image;
     }
 
-    Object.assign(category, dto);
+    const cleanData = super.cleanUpdate(dto);
+
+    Object.assign(category, cleanData);
 
     await category.save();
 

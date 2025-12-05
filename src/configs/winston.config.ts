@@ -1,9 +1,9 @@
 import * as winston from 'winston';
 
-import DailyRotateFile from 'winston-daily-rotate-file';
+import { mkdirSync } from 'fs';
 import { hostname } from 'os';
 import { join } from 'path';
-import { mkdirSync } from 'fs';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 const logsDir = join(process.cwd(), 'logs');
 
@@ -13,17 +13,6 @@ try {
 } catch (err) {
   console.error('Failed to create logs directory:', err);
 }
-
-// Icons and colors mapping for levels
-const levelEmoji: Record<string, string> = {
-  error: '🔴',
-  warn: '⚠️',
-  info: 'ℹ️',
-  http: '🌐',
-  debug: '�',
-  verbose: '🔎',
-  silly: '🤪',
-};
 
 // Define colors for levels (used by colorize())
 winston.addColors({
@@ -49,8 +38,10 @@ const wrapAnsi = (text: string, colorCode: string) =>
 // Console color codes to use for different parts
 const consoleColors: Record<string, string> = {
   context: '1;32',
-  endpoint: '1;34',
-  method: '1;35',
+  endpoint: '1;35',
+  method: '1;32',
+  reqId: '90',
+  timestamp: '89',
 };
 
 export const formatLog = (info: winston.Logform.TransformableInfo) => {
@@ -58,7 +49,6 @@ export const formatLog = (info: winston.Logform.TransformableInfo) => {
   const rawLevel = String(info.level);
   const isColorized = ansiEscapeRegex.test(rawLevel);
   const levelKey = (isColorized ? stripAnsi(rawLevel) : rawLevel).toLowerCase();
-  const emoji = levelEmoji[levelKey] ?? 'ℹ️';
   const displayLevel = isColorized ? rawLevel : levelKey.toUpperCase();
 
   let message = '';
@@ -106,10 +96,57 @@ export const formatLog = (info: winston.Logform.TransformableInfo) => {
         message = message.replace(ep, coloredEndpoint);
       }
     }
+    // Fallback: look for METHOD + path pattern e.g. GET /api/categories 30ms
+    if (!endpointMatch) {
+      const fallbackMatch = message.match(
+        /\b(GET|POST|PUT|DELETE|PATCH|OPTIONS|HEAD)\s+(\/[^\s,}]+)(?:\s|$)/i,
+      );
+      if (fallbackMatch) {
+        const methodToken = fallbackMatch[1];
+        const pathToken = fallbackMatch[2];
+        const coloredMethod = wrapAnsi(methodToken, consoleColors.method);
+        const coloredPath = wrapAnsi(pathToken, consoleColors.endpoint);
+        message = message.replace(
+          `${methodToken} ${pathToken}`,
+          `${coloredMethod} ${coloredPath}`,
+        );
+      }
+    }
+    // Highlight error message detail
+    const arrowIndex = message.indexOf('-> ');
+    if (arrowIndex !== -1) {
+      let errText = message.slice(arrowIndex + 3);
+      const reqIndex = errText.indexOf(' [req:');
+      if (reqIndex !== -1) errText = errText.slice(0, reqIndex);
+      errText = errText.trim();
+      if (errText) {
+        const coloredError = wrapAnsi(errText, '1;31');
+        message = message.replace(errText, coloredError);
+      }
+    }
   }
 
-  let log = `${timestamp} ${emoji}  - [${displayLevel}]: ${message}`;
-  if (stackStr) log += `\n${stackStr}`;
+  // colorize timestamp and remove request-id from console output
+  let ts = timestamp;
+  if (isColorized) ts = wrapAnsi(timestamp, consoleColors.timestamp);
+
+  if (isColorized) {
+    // strip any request id tags (e.g. [req:...]) from console logs
+    message = message.replace(/\s?\[req:[^\]]+\]/g, '');
+  }
+
+  let log = `${ts} [${displayLevel}]: ${message}`;
+
+  if (stackStr) {
+    if (isColorized && levelKey === 'error') {
+      // Show only the first non-empty line of the stack to keep console clean
+      const lines = String(stackStr).split('\n');
+      const firstLine = lines.find((l) => l.trim().length > 0) ?? '';
+      if (firstLine) log += `\n${wrapAnsi(firstLine, '31')}`;
+    } else {
+      log += `\n${stackStr}`;
+    }
+  }
   return log;
 };
 
@@ -149,8 +186,12 @@ const accessDailyRotateFileTransport = new DailyRotateFile({
   format: customFormat,
 });
 
+const defaultLogLevel =
+  process.env.LOG_LEVEL ??
+  (process.env.NODE_ENV === 'production' ? 'info' : 'http');
+
 export const winstonConfig: winston.LoggerOptions = {
-  level: process.env.LOG_LEVEL || 'info',
+  level: defaultLogLevel,
   format: customFormat,
   defaultMeta: {
     service: 'unified-crm-api',
@@ -160,6 +201,7 @@ export const winstonConfig: winston.LoggerOptions = {
   },
   transports: [
     new winston.transports.Console({
+      level: process.env.CONSOLE_LOG_LEVEL ?? defaultLogLevel,
       format: winston.format.combine(
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         winston.format.errors({ stack: true }),

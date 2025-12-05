@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { Type, TypeDocument } from '@/modules/types/schemas';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { BaseService } from '@/common/base';
-import { TypesRepository } from '@/modules/types/types.repository';
-import { UpdateTypeDto } from '@/modules/types/dto';
 import { multerFileToMedia } from '@/common/utils';
 import removeFile from '@/common/utils/remove-file.util';
+import { UpdateTypeDto } from '@/modules/types/dto';
+import { TypesRepository } from '@/modules/types/types.repository';
 
 @Injectable()
 export class TypesService extends BaseService<TypeDocument> {
@@ -24,9 +24,13 @@ export class TypesService extends BaseService<TypeDocument> {
     if (file) {
       removeFile(type.image?.url || '');
       dto.image = multerFileToMedia(file, dto.name);
+    } else {
+      delete dto.image;
     }
 
-    Object.assign(type, dto);
+    const cleanData = super.cleanUpdate(dto);
+
+    Object.assign(type, cleanData);
 
     await type.save();
 

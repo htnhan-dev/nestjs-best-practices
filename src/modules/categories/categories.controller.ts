@@ -43,7 +43,6 @@ export class CategoriesController extends BaseController<CategoryDocument> {
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<BaseResponse<CategoryDocument> | null> {
     dto.slug = slugify(dto.name);
-    console.log('file : ', file);
 
     if (file) {
       dto.image = multerFileToMedia(file);
@@ -71,8 +70,14 @@ export class CategoriesController extends BaseController<CategoryDocument> {
     @Body() dto: UpdateCategoryDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<BaseResponse<CategoryDocument>> {
+    console.log('dto : ', dto);
+
     if (!dto || typeof dto !== 'object' || Object.keys(dto).length === 0) {
       throw new BadRequestException('Update data must be provided');
+    }
+
+    if (!dto.image) {
+      delete dto.image;
     }
 
     dto.slug = slugify(dto.name || '');

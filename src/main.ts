@@ -1,8 +1,3 @@
-import {
-  LoggingInterceptor,
-  ResponseTransformInterceptor,
-  TimeoutInterceptor,
-} from '@/common/interceptors';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -39,17 +34,8 @@ async function bootstrap(): Promise<void> {
 
   const httpAdapterHost = app.get<HttpAdapterHost>(HttpAdapterHost);
 
-  const loggingInterceptor = app.get<LoggingInterceptor>(LoggingInterceptor);
-  const timeoutInterceptor = app.get<TimeoutInterceptor>(TimeoutInterceptor);
-  const responseTransformInterceptor = app.get<ResponseTransformInterceptor>(
-    ResponseTransformInterceptor,
-  );
-
-  app.useGlobalInterceptors(
-    loggingInterceptor,
-    timeoutInterceptor,
-    responseTransformInterceptor,
-  );
+  // Interceptors are registered globally via APP_INTERCEPTOR in SharedModule
+  // to avoid double-registration we don't call app.useGlobalInterceptors here.
 
   app.useGlobalFilters(new HttpExceptionsFilter(httpAdapterHost, appLogger));
 

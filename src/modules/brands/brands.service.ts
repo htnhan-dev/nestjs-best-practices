@@ -24,9 +24,13 @@ export class BrandsService extends BaseService<BrandDocument> {
     if (file) {
       removeFile(brand.image?.url || '');
       dto.image = multerFileToMedia(file);
+    } else {
+      delete dto.image;
     }
 
-    Object.assign(brand, dto);
+    const cleanData = super.cleanUpdate(dto);
+
+    Object.assign(brand, cleanData);
 
     await brand.save();
 
